@@ -1,0 +1,6 @@
+object 958f37028be0c29383d254639f0010908368397d
+type commit
+tag v0.6.2.3
+tagger Michael Shigorin <mike@altlinux.org> 1441659606 +0300
+
+mktmpdir fixup
