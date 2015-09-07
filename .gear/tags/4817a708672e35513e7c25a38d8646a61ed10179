@@ -1,6 +1,0 @@
-object bc2789e9d6f4c23270b5ac7f9f31c257620259a1
-type commit
-tag v1.0.5
-tagger Michael Shigorin <mike@altlinux.org> 1422909897 +0300
-
-lists fix backported
