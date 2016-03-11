@@ -1,6 +1,6 @@
 Name: mkimage-profiles
-Version: 1.1.86
-Release: alt1
+Version: 1.1.87
+Release: alt0.M70P.1
 
 Summary: ALT Linux based distribution metaprofile
 License: GPLv2+
@@ -90,6 +90,9 @@ mv %buildroot%mpdir/doc/mkimage-profiles.7 %buildroot%_man7dir/
 %endif
 
 %changelog
+* Sat Mar 12 2016 Michael Shigorin <mike@altlinux.org> 1.1.87-alt0.M70P.1
+- starterkits-20160312
+
 * Mon Feb 29 2016 Michael Shigorin <mike@altlinux.org> 1.1.86-alt1
 - junior
 
