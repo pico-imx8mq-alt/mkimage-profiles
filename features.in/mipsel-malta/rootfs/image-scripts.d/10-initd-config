@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# rewrite /etc/initd.mk
+cat << EOF > /etc/initrd.mk
+AUTODETECT =
+FEATURES = add-modules buildinfo cleanup
+MODULES_PRELOAD = ext2 ext4
+
+EOF
