@@ -1,0 +1,30 @@
+#!/bin/sh -efu
+
+mkdir -p /boot
+
+vmlinuz="$(find /boot -type f -name 'vmlinuz-*')"
+kversion="${vmlinuz##/boot/vmlinuz-}"
+
+DTB_NAME=baikal_bfk2
+
+[ -n "$DTB_NAME" ]
+
+cp /lib/devicetree/"$kversion/$DTB_NAME".dtb /boot/"$DTB_NAME"-"$kversion".dtb
+ln -s "$DTB_NAME"-"$kversion".dtb /boot/$DTB_NAME.dtb
+
+#ln -s vmlinuz /boot/vmlinux.bin
+#ln -s initrd.img /boot/initramfs.gz
+#ln -s "$DTB_NAME".dtb /boot/baikal.dtb
+
+ln -s boot/vmlinuz /vmlinux.bin
+ln -s boot/initrd.img /initramfs.gz
+ln -s boot/"$DTB_NAME".dtb /baikal.dtb
+
+ln -s boot/vmlinuz /bfk3.vmlinux.bin
+#ln -s /boot/"$DTB_NAME"-"$kversion".dtb /bfk3.dtb
+#To match with update-kernel
+mkdir -p /boot/dtb
+ln -s /boot/"$DTB_NAME"-"$kversion".dtb /boot/dtb/"$DTB_NAME".dtb
+ln -s /boot/dtb/"$DTB_NAME".dtb /bfk3.dtb
+
+exit 0
