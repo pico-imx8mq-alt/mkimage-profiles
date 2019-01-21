@@ -1,0 +1,6 @@
+#!/bin/sh -fu
+
+f=/etc/modules-load.d/multipath.conf
+rm -f $f
+touch $f
+exit $?

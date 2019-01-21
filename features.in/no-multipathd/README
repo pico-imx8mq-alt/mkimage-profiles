@@ -1,0 +1,4 @@
+
+Disables multipathd service AND loading multipath modules.
+
+Useful for platforms where kernels don't support multipath.
