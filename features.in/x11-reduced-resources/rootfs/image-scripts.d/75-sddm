@@ -1,0 +1,5 @@
+#!/bin/sh -efu
+
+f=/etc/X11/sddm/sddm.conf
+
+[ ! -f $f ] || echo -e '\n[General]\nSoftwareRenderer=true' >> $f

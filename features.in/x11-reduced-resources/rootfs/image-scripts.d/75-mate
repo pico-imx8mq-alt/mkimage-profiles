@@ -1,0 +1,29 @@
+#!/bin/sh -efu
+
+dconfdir=/etc/dconf/profile
+dconfprofile=/etc/dconf/profile/user
+dconfkeyfile=/etc/dconf/db/local.d/01-mate-reduced-resources
+
+test ! -f /usr/bin/mate-session && exit || :
+
+mkdir -p $dconfdir
+
+cat > "$dconfprofile" <<EOF
+user-db:user
+system-db:local
+EOF
+
+chmod 644 "$dconfprofile"
+
+mkdir -p /etc/dconf/db/local.d
+
+cat > "$dconfkeyfile" <<EOF
+[org/mate/marco/general]
+reduced-resources=true
+compositing-manager=false
+EOF
+
+chmod 644 "$dconfkeyfile"
+
+dconf update
+exit $?
