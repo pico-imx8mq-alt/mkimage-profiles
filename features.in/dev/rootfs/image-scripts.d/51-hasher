@@ -8,6 +8,24 @@ gray="$(echo -ne "\\033[0;37m")"
 white="$(echo -ne "\\033[1;37m")"
 cyan="$(echo -ne "\\033[1;36m")"
 
+EXAMPLE_IMAGE="syslinux.iso"
+
+if [ "$ARCH" = mipsel ]
+then
+	EXAMPLE_IMAGE="ARCH=mipsel vm/regular-builder.img"
+fi
+
+BUILD_EXAMPLE="* ${white}make -C /usr/share/mkimage-profiles ${EXAMPLE_IMAGE}${gray}"
+
+if [ "$ARCH" != i586 -a "$ARCH" != x86_64 -a "$ARCH" != e2k ]
+then
+	LIVECD=""
+else
+	LIVECD="
+Run ${white}swapon${gray}(8) on any local swaps you might like to employ
+followed by ${white}service livecd-tmpfs restart${gray} to reconfigure tmpfs"
+fi
+
 # root
 cat >> /root/.bash_profile << EOF
 
@@ -17,13 +35,11 @@ tmpfs="\$(df -kT /tmp 2>/dev/null \\
 	| awk '/^[a-zA-Z_0-9/-]+[[:space:]]+tmpfs/ { print int(\$3/1024); }')"
 
 cat << EOH
-Welcome to live builder host system!
+Welcome to builder host system!
 
 Memory: $cyan\${ram}M$gray, swap: $cyan\${swap}M$gray
 Autoconfigured tmpfs on /tmp: $cyan\${tmpfs}M$gray
-
-Run ${white}swapon${gray}(8) on any local swaps you might like to employ
-followed by ${white}service livecd-tmpfs restart${gray} to reconfigure tmpfs
+$LIVECD
 
 EOH
 EOF
@@ -55,8 +71,8 @@ if [ -x "$ZSHELL" ]; then
 	install -m644 -o "$USER" -g "$USER" /dev/null "$HOME/.zshrc"
 	cat >> "$HOME/.zsh_history" <<-EOF
 	git clone git://git.altlinux.org/gears/m/mkimage-profiles.git && cd mkimage-profiles && make help/distro
-	make -C /usr/share/mkimage-profiles syslinux.iso
 	git clone git://git.altlinux.org/gears/h/hello.git && cd hello && gear-hsh
+	make -C /usr/share/mkimage-profiles ${EXAMPLE_IMAGE}
 	EOF
 fi
 
@@ -72,7 +88,7 @@ alias l='ls -l'
 alias m='cd /usr/share/mkimage-profiles'
 clear
 cat << EOH
-Welcome to live builder environment!
+Welcome to builder environment!
 Here are some ALT package/image build tools prepared for you:
 * ${white}gear${gray}(1) -- see ${cyan}http://en.altlinux.org/gear${gray};
 * ${white}hsh${gray}(1)  -- see ${cyan}http://en.altlinux.org/hasher${gray};
@@ -81,7 +97,7 @@ Here are some ALT package/image build tools prepared for you:
 
 Examples (use right/middle mouse button to paste; see ~/hasher/repo/):
 * ${white}git clone git://git.altlinux.org/gears/h/hello.git && cd hello && gear-hsh${gray}
-* ${white}make -C /usr/share/mkimage-profiles syslinux.iso${gray}
+$BUILD_EXAMPLE
 
 EOH
 EOF
@@ -96,8 +112,14 @@ cat << EOF >> "$HOME/.rpmmacros"
 EOF
 
 # hasher
-WORKDIR="$TMP/hasher"
-ln -s "$WORKDIR" "$HOME/hasher"
+if [ "$ARCH" != i586 -a "$ARCH" != x86_64 -a "$ARCH" != e2k ]
+then
+	# Not enough space on tmpfs
+	WORKDIR="$HOME/hasher"
+else
+	WORKDIR="$TMP/hasher"
+	ln -s "$WORKDIR" "$HOME/hasher"
+fi
 echo "rpm-dir file://$HOME/hasher/repo $ARCH hasher" \
 	>> /etc/apt/sources.list.d/hasher.list
 
