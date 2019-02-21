@@ -1,0 +1,12 @@
+#!/bin/sh -efu
+
+mpvdir=/etc/mpv
+
+test ! -d $mpvdir && exit || :
+
+cat > "${mpvdir}/mpv.conf" <<EOF
+# HW acceleration is not supported on this platform yet
+vo=x11
+sws-scaler=fast-bilinear
+
+EOF
