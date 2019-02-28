@@ -14,6 +14,7 @@ DESKTOP_TARGET += use/no-sleep use/x11/armsoc
 endif
 
 ifeq (,$(filter-out mipsel,$(ARCH)))
+BASE_TARGET += use/tty/S0
 DESKTOP_TARGET += use/x11/radeon
 endif
 
