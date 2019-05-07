@@ -13,6 +13,14 @@ kver="$(rpm -qa 'kernel-image*' \
 cd /boot
 echo "$kver" > .origver	# for tar2fs
 
+if [ -n "$GLOBAL_EFI_BOOTLOADER" ]; then
+	echo "$GLOBAL_EFI_BOOTLOADER" > .bootloader # for tar2fs
+elif [ -n "$GLOBAL_BASE_BOOTLOADER" ]; then
+	echo "$GLOBAL_BASE_BOOTLOADER" > .bootloader # for tar2fs
+fi
+
+make-initrd -N -k "$kver" AUTODETECT=
+
 # NB: e2k kernel builds "image" instead of "vmlinuz"
 [ -f vmlinuz-$kver ] && ln -s vmlinuz-$kver vmlinuz ||:
 ln -s initrd-$kver.img initrd.img	# missing at this stage

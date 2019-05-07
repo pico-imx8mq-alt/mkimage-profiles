@@ -37,3 +37,35 @@ use/kernel/desktop:
 
 use/kernel/server:
 	@$(call add,THE_KMODULES,ipset kvm)
+
+# for vm targets
+use/kernel/initrd-setup: use/kernel
+	@$(call add,THE_INITRDFEATURES,add-modules compress cleanup)
+	@$(call try,VM_FSTYPE,ext4)
+	@$(call add,THE_INITRDMODULES,$$(VM_FSTYPE))
+ifeq (,$(filter-out i586 x86_64 aarch64 armh,$(ARCH)))
+	@$(call add,THE_INITRDMODULES,ahci sd_mod)
+	@$(call add,THE_INITRDMODULES,nvme nvme-core)
+	@$(call add,THE_INITRDMODULES,virtio-scsi virtio-blk virtio-rng)
+endif
+ifeq (,$(filter-out i586 x86_64,$(ARCH)))
+	@$(call add,THE_INITRDFEATURES,qemu)
+	@$(call add,THE_INITRDMODULES,ata_piix)
+endif
+ifeq (,$(filter-out aarch64 armh,$(ARCH)))
+	@$(call add,THE_INITRDMODULES,bcm2835 sunxi-mmc)
+	@$(call add,THE_INITRDMODULES,nvmem_rockchip_efuse)
+	@$(call add,THE_INITRDMODULES,virtio-mmio)
+endif
+ifeq (,$(filter-out aarch64,$(ARCH)))
+	@$(call add,THE_INITRDMODULES,meson-gx-mmc)
+	@$(call add,THE_INITRDMODULES,nvmem_meson_efuse)
+endif
+ifeq (,$(filter-out armh,$(ARCH)))
+	@$(call add,THE_INITRDMODULES,sdhci_dove sdhci_esdhc_imx)
+endif
+ifeq (,$(filter-out e2k%,$(ARCH)))
+	@$(call add,THE_INITRDFEATURES,usb)
+endif
+	@$(call xport,THE_INITRDMODULES)
+	@$(call xport,THE_INITRDFEATURES)

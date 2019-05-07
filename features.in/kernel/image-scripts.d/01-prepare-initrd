@@ -1,0 +1,11 @@
+#!/bin/sh -x
+
+if [ -n "$GLOBAL_THE_INITRDFEATURES" ]; then
+	echo "FEATURES += $GLOBAL_THE_INITRDFEATURES" >> /etc/initrd.mk
+fi
+
+if [ -n "$GLOBAL_THE_INITRDMODULES" ]; then
+	echo "MODULES_ADD += $GLOBAL_THE_INITRDMODULES" >> /etc/initrd.mk
+fi
+
+exit 0
