@@ -262,12 +262,12 @@ wipe_device () {
 
     sync
     if is_executable partprobe; then
-        partprobe
+        partprobe ||:
         sleep 5
     fi
 
     if is_executable mdev; then
-        mdev -s
+        mdev -s ||:
         sleep 5
     fi
 }
