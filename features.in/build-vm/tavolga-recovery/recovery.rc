@@ -410,6 +410,9 @@ main () {
         action "Syncing..."
         sync
 
+        action "Setting recovery status..."
+        echo "1000" > /var/run/recoveryui/recovery.stat ||:
+
         action "DONE"
     ) 2>&1 \
         | tee "$LOGFILE" | grep -ave '^\+'
