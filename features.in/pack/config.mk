@@ -43,4 +43,10 @@ ifeq (vm,$(IMAGE_CLASS))
 
 $(VM_EXTS:.%=use/pack/%): use/pack; @:
 
+ifeq (mipsel,$(ARCH))
+# tavolga
+VM_TAVOLGA_EXTS := .recovery.tar
+use/pack/recovery.tar: use/pack/tar; @:
+endif
+
 endif

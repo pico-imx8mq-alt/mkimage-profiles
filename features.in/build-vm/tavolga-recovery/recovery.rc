@@ -1,0 +1,429 @@
+#!/bin/sh
+# vim: set ts=4 sw=4 tw=0 et ft=sh fen fdm=marker :
+
+# {{{ LICENSE
+
+# Copyright (c) 2018, BaseAlt SPO
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#     * Neither the name of the <organization> nor the
+#       names of its contributors may be used to endorse or promote products
+#       derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# }}}
+
+set -eu ${DEBUG:+-x}
+
+MY_NAME="ALT Recovery"
+RECOVERY_TAR_PATH="${1:-}"
+RECOVERY_TAR_BYTES="$(stat -c%s "$RECOVERY_TAR_PATH")"
+RECOVERY_TAR_DEVICE="${2:-}"
+
+# Generate UUIDs for the partition we are going to format
+NEW_ROOTFS_UUID="$(uuidgen)"
+NEW_BOOT_UUID="$(uuidgen)"
+
+
+# {{{ Logging
+
+LOGFILE="/tmp/recovery-script.log"
+
+echo "Starting $MY_NAME" > "$LOGFILE"
+
+log () {(
+    { set +x; } 2>/dev/null
+    echo "$(date +"%Y-%m-%d %H:%M:%S")  $*" >&2
+    echo "$(date +"%Y-%m-%d %H:%M:%S")  $*" >> "$LOGFILE"
+)}
+
+die () {
+    local exit_code="$1"
+    shift
+
+    log "FAILURE: $*. You can find details in $LOGFILE."
+    log "Recovery process ABORTED."
+    exit "$exit_code"
+}
+
+action () {(
+    { set +x; } 2>/dev/null
+    log "$*"
+    echo "$*" > "$WORKDIR/action"
+)}
+
+## }}}
+
+## {{{ Common helpers
+
+yyy () {
+    yes 2>/dev/null | "$@"
+}
+
+startswith () {
+    [ -n "$1" ] && [ "${1#$2}" != "$1" ]
+}
+
+is_executable () {
+    [ -n "$1" ] && [ -x "$(which "$1" 2>/dev/null ||:)" ]
+}
+
+is_source_drive () {
+    local device="$1" mounted
+    startswith "$RECOVERY_TAR_DEVICE" "$target" && return 0
+    mounted=$(df "$RECOVERY_TAR_PATH" | tail -n1 | cut -f1 -d ' ')
+    startswith "$mounted" "$target" && return 0 || return 1
+}
+
+size_gb () {
+    echo "$(( `blockdev --getsize64 $1` / 1024 / 1024 / 1024 ))"
+}
+
+size_mb () {
+    echo "$(( `blockdev --getsize64 $1` / 1024 / 1024 ))"
+}
+
+umount_or_die () {
+    local partition="$1"
+
+    umount "$partition" ||:
+    sync
+
+    if grep -q "^$partition[[:space:]]"  /proc/mounts ; then
+        die 21 "$partition is still mounted"
+    fi
+}
+
+umount_device () {
+    local device="$1" partition
+
+    if grep -q "^$device" /proc/mounts ; then
+        log "Unmounting partitions of $device..."
+        for partition in "$device"*; do
+            umount_or_die "$partition"
+        done
+        log "No partitions of $device are mounted now"
+    fi
+}
+
+pipeview () {
+    local pv="$(which pv ||:)"
+    if [ -x "$pv" ] ; then
+        "$pv" -fpetr -w80 -s "$RECOVERY_TAR_BYTES" 2>/dev/tty
+    else
+        # on older recovery versions (without pv) we don't show progress
+        cat
+    fi
+}
+
+## }}}
+
+## {{{ Workdir and cleanup
+
+WORKDIR=$(mktemp -d /tmp/alt-recovery.XXXXXX)
+RECOVERY_UMOUNT_ON_EXIT=""
+cleanup() {
+    log "Cleanup..."
+    [ -z "$RECOVERY_UMOUNT_ON_EXIT" ] || umount_device "$RECOVERY_UMOUNT_ON_EXIT"
+    rm -rf "$WORKDIR"
+    exit "$1"
+}
+trap 'cleanup $?' EXIT
+trap 'cleanup 1' HUP PIPE INT QUIT TERM
+
+log "Workdir is $WORKDIR"
+
+## }}}
+
+## {{{ Dialogs
+
+##   {{{ Dialogrc
+
+cat > "$WORKDIR/dialogrc" <<'EOF'
+aspect = 0
+separate_widget = ""
+tab_len = 0
+visit_items = OFF
+use_shadow = OFF
+use_colors = ON
+screen_color = (WHITE,DEFAULT,ON)
+shadow_color = (BLACK,BLACK,ON)
+dialog_color = (BLACK,WHITE,OFF)
+title_color = (BLUE,WHITE,ON)
+border_color = (WHITE,WHITE,ON)
+button_active_color = (WHITE,BLUE,ON)
+button_inactive_color = dialog_color
+button_key_active_color = button_active_color
+button_key_inactive_color = (RED,WHITE,OFF)
+button_label_active_color = (YELLOW,BLUE,ON)
+button_label_inactive_color = (BLACK,WHITE,ON)
+inputbox_color = dialog_color
+inputbox_border_color = dialog_color
+searchbox_color = dialog_color
+searchbox_title_color = title_color
+searchbox_border_color = border_color
+position_indicator_color = title_color
+menubox_color = dialog_color
+menubox_border_color = border_color
+item_color = dialog_color
+item_selected_color = button_active_color
+tag_color = title_color
+tag_selected_color = button_label_active_color
+tag_key_color = button_key_inactive_color
+tag_key_selected_color = (RED,BLUE,ON)
+check_color = dialog_color
+check_selected_color = button_active_color
+uarrow_color = (GREEN,WHITE,ON)
+darrow_color = uarrow_color
+itemhelp_color = (WHITE,BLACK,OFF)
+form_active_text_color = button_active_color
+form_text_color = (WHITE,CYAN,ON)
+form_item_readonly_color = (CYAN,WHITE,ON)
+gauge_color = title_color
+border2_color = dialog_color
+inputbox_border2_color = dialog_color
+searchbox_border2_color = dialog_color
+menubox_border2_color = dialog_color
+EOF
+
+##   }}} Dialogrc
+
+ndialog() {(
+    { set +x; } 2>/dev/null
+    DIALOGRC="$WORKDIR/dialogrc" dialog --colors --backtitle "$MY_NAME" "$@"
+)}
+
+confirm_dialog() {
+    local response=''
+    while [ "$response" != 'YES' ]; do
+        ndialog --inputbox "$1\n\nIf that's what you want, type 'YES' (IN CAPS) in the input box below.\n\nPress Cancel or Ctrl+C to abort the recovery process." 0 0 \
+            2>"$WORKDIR/confirmation"
+        response=$(cat "$WORKDIR/confirmation")
+    done
+}
+
+describe_device () {
+    local dev=$(basename "$1")
+    echo "$(size_gb "/dev/$dev")G $(sed -e 's/@/_/g' -e 's/[[:space:]]*$//g' /sys/block/$dev/device/model || :)"
+}
+
+choose_target_device () {
+    local dev menu="" old_ifs="$IFS" out_file="$1"
+
+    for dev in /dev/sd?; do
+        [ -b "$dev" ] || continue
+        menu="${menu}$dev@$(describe_device $dev)@"
+    done
+    [ -n "$menu" ] || die 11 "No suitable storage devices found."
+
+    IFS="@"
+    ndialog --menu "Choose the target device, please:" 0 0 0 $menu 2> "$out_file"
+    IFS="$old_ifs"
+
+    dev="$(cat "$out_file")"
+    log "Selected target device: $dev ($(describe_device $dev))"
+    [ -b "$dev" ] || die 12 "Invalid device selected: $TARGET_DEVICE"
+}
+
+## }}}
+
+## {{{ Partitions and filesystems
+
+wipe_device () {
+    local device="$1" tar_size_gb
+    part5_size="$(( $RECOVERY_TAR_BYTES / 1024 / 1024 + 200 ))"
+
+    if is_executable parted; then
+        wipe_device_parted "$device" "$part5_size"
+    else
+        if is_executable fdisk; then
+            wipe_device_fdisk "$device" "$part5_size"
+        else
+            log "Neiter fdisk nor parted is available; partitioning skipped"
+        fi
+    fi
+
+    sync
+    if is_executable partprobe; then
+        partprobe
+        sleep 5
+    fi
+
+    if is_executable mdev; then
+        mdev -s
+        sleep 5
+    fi
+}
+
+wipe_device_parted () {
+    local device="$1" part5_size="$2"
+    action "Wiping $device with parted"
+    log "Reserving $part5_size MiB for backup partition"
+
+    parted --script "$device" -- \
+        mklabel msdos \
+        mkpart primary ext4 1 512MiB \
+        mkpart extended 513MiB -1s \
+        mkpart logical 514MiB "$((514 + $part5_size))MiB" \
+        mkpart logical "$((515 + $part5_size))MiB" -1s \
+        print
+}
+
+wipe_device_fdisk () {
+    local device="$1" part5_size="$2"
+
+    action "Wiping $device with fdsik"
+    log "Reserving $part5_size MiB for backup partition"
+
+    fdisk "$device" <<EOF
+o
+n
+p
+1
+
++512M
+n
+e
+2
+
+
+n
+l
+
++${part5_size}M
+n
+l
+
+
+
+w
+
+EOF
+    log "Partitions created:"
+    fdisk -l "$device"
+}
+
+create_fs_on_target () {
+    local device="$1"
+    action "Formatting ${device}1"
+    yyy mkfs.ext4 -U "$NEW_BOOT_UUID" "${device}1"
+    action "Formatting ${device}6"
+    yyy mkfs.ext4 -U "$NEW_ROOTFS_UUID" "${device}6"
+}
+
+save_tar_to_partition () {
+    local partition="$1" mkfs="$(which mksquashfs ||:)"
+    if [ -x "$mkfs" ] ; then
+        action "Creating sqashfs partition on $partition"
+        "$mkfs"  "$RECOVERY_TAR_PATH" "$partition" -noappend -progress >/dev/tty
+    else
+        log "mksquashfs not found, skipping creating recovery partition"
+    fi
+}
+
+write_rootfs () {
+    local mnt="$WORKDIR/root" device="$1" inner
+
+    action "Mounting future root"
+    mkdir -p "$mnt"
+    mount -t ext4 "${device}6" "$mnt"
+    mkdir -p "$mnt/boot"
+    mount -t ext4 "${device}1" "$mnt/boot"
+
+    action "Unpacking $RECOVERY_TAR_PATH onto $device"
+    inner="$(tar -tf "$RECOVERY_TAR_PATH" | grep 'rootfs.tar.gz$')"
+    tar -xOf "$RECOVERY_TAR_PATH" "$inner" \
+        | pipeview \
+        | tar -C "$mnt" -xz
+
+    action "Setting correct device UUIDs in the new root"
+    sed -i \
+        -e "s,/dev/sda6,UUID=$NEW_ROOTFS_UUID,g" \
+        -e "s,/dev/sda1,UUID=$NEW_BOOT_UUID,g" \
+        "$mnt/boot/bootconf" "$mnt/etc/fstab"
+
+    action "Umounting $device"
+    umount_or_die "${device}1"
+    umount_or_die "${device}6"
+    log "Syncing..."
+    sync
+}
+
+check_partitions () {
+    local device="$1"
+    action "Checking partitions of $device"
+    [ $(size_mb "${device}1") -gt 128 ] || die 31 "${device}1 too small"
+    [ $(size_gb "${device}6") -gt 3 ] || die 32 "${device}6 too small"
+    # TODO: check partition types or whatever
+}
+
+## }}}
+
+## {{{ Main
+
+main () {
+    local target action
+
+    log "Recovery tarball: $RECOVERY_TAR_PATH$(echo; tar -tvf "$RECOVERY_TAR_PATH")"
+    choose_target_device "$WORKDIR/target"
+    target=$(cat "$WORKDIR/target")
+
+    export RECOVERY_UMOUNT_ON_EXIT="$target"
+
+    confirm_dialog "All the data from $target ($(describe_device $target))\n\Z1\ZbWILL BE ERASED\Z0\ZB"
+    log "Data wiping confirmed"
+
+    (
+        set -x
+        if is_source_drive "$target"; then
+            log "Recovering from the drive; partitioning skipped"
+            umount_or_die "${target}6"
+            umount_or_die "${target}1"
+        else
+            umount_device "$target"
+            wipe_device "$target"
+            umount_device "$target"
+        fi
+
+        check_partitions "$target"
+        create_fs_on_target "$target"
+        write_rootfs "$target"
+
+        is_source_drive "$target" || save_tar_to_partition "${target}5"
+        action "Syncing..."
+        sync
+
+        action "DONE"
+    ) 2>&1 \
+        | tee "$LOGFILE" | grep -ave '^\+'
+
+    action=$(cat "$WORKDIR/action")
+    if [ "$action" == 'DONE' ]; then
+        ndialog --msgbox "\Z2The recovery process completed successfully.\Z0\n\nPress ENTER to continue." 0 0
+    else
+        sed -i '/^screen_color/ s/DEFAULT/RED/g' "$WORKDIR/dialogrc"
+        ndialog --msgbox "Recovery process \Z1\ZbABORTED\Z0\ZB:\n\n$action failed.\n\nYou can find details in $LOGFILE." 0 0
+        exit 111
+    fi
+}
+
+## }}}
+
+main
