@@ -28,6 +28,9 @@ use/init/sysv/elogind: use/init/sysv
 use/init/systemd: use/init
 	@$(call set,INIT_TYPE,systemd)
 	@$(call add,INSTALL2_PACKAGES,installer-feature-journald-tty)
+ifneq (,$(filter-out e2k%,$(ARCH)))
+	@$(call add,DEFAULT_SERVICES_DISABLE,acpid)
+endif
 
 use/init/systemd/full: use/init/systemd
 	@$(call add,THE_PACKAGES,bash-completion-systemd chkconfig)
