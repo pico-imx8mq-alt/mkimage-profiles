@@ -255,17 +255,6 @@ distro/regular-server-lxd: distro/.regular-bare \
 	@$(call add,DEFAULT_SERVICES_ENABLE,getty@tty1 getty@ttyS0)
 	@$(call add,DEFAULT_SERVICES_ENABLE,livecd-net-eth)
 
-distro/regular-engineering: distro/regular-lxde use/live/ru
-	@$(call add,THE_LISTS,$(call tags,engineering desktop))
-	@$(call add,THE_LISTS,$(call tags,desktop sane))
-	@$(call add,THE_LISTS,$(call tags,cups desktop))
-	@$(call add,THE_PACKAGES,libreofficekit LibreOffice-gnome LibreOffice-langpack-ru)
-	@$(call add,THE_PACKAGES,LibreOffice-mimetypes java)
-	@$(call add,THE_PACKAGES,gnome-disk-utility)
-	@$(call add,THE_KMODULES,staging)
-	@$(call add,DEFAULT_SERVICES_ENABLE,cups)
-	@$(call add,DEFAULT_SERVICES_ENABLE,ModemManager)
-
 endif
 
 ifeq (ve,$(IMAGE_CLASS))

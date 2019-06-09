@@ -35,7 +35,6 @@ distro/alt-p9-server-lxd: distro/regular-server-lxd mixin/p9; @:
 
 distro/alt-p9-builder: distro/regular-builder mixin/p9; @:
 
-distro/alt-p9-engineering: distro/regular-engineering mixin/p9; @:
 endif
 
 ifeq (ve,$(IMAGE_CLASS))
