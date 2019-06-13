@@ -27,6 +27,7 @@ vm/regular-jeos-sysv: profile/jeos-sysv vm/.regular-base; @:
 vm/.regular-desktop: vm/.regular-base use/browser/firefox/esr \
 	use/oem $(DESKTOP_TARGET)
 ifeq (,$(filter-out armh aarch64,$(ARCH)))
+	@$(call add,THE_PACKAGES,xorg-96dpi)
 	@$(call add,THE_LISTS,remote-access)
 	@$(call add,THE_PACKAGES,blueberry mpv)
 endif
