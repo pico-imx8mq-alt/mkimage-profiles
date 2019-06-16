@@ -16,6 +16,9 @@ profile/jeos-sysv: profile/jeos-base +sysvinit +power \
 profile/jeos-systemd: profile/jeos-base +systemd \
 	use/net-eth/networkd-dhcp; @
 
+profile/regular-builder: profile/jeos-base mixin/regular-builder
+	@$(call add,USERS,altlinux:alt:1:1)
+
 profile/regular-desktop: profile/base mixin/regular-x11 \
 	mixin/regular-desktop
 	@$(call add,THE_PACKAGES,mpv)

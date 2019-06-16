@@ -41,6 +41,8 @@ ifeq (,$(filter-out armh aarch64,$(ARCH)))
 endif
 	@:
 
+vm/regular-builder: profile/regular-builder vm/.regular-base +sysvinit; @:
+
 vm/regular-lxde: profile/regular-lxde vm/.regular-desktop; @:
 vm/regular-lxde-sysv: profile/regular-lxde-sysv vm/.regular-desktop; @:
 vm/regular-lxqt: profile/regular-lxqt vm/.regular-desktop; @:
@@ -50,7 +52,7 @@ vm/regular-icewm: profile/regular-icewm vm/.regular-desktop; @:
 
 
 ifeq (,$(filter-out mipsel,$(ARCH)))
-
+vm/tavolga-regular-builder: vm/regular-builder use/mipsel-mitx; @:
 vm/tavolga-regular-lxde: vm/regular-lxde use/mipsel-mitx; @:
 vm/tavolga-regular-lxqt: vm/regular-lxqt use/mipsel-mitx; @:
 vm/tavolga-regular-mate: vm/regular-mate use/mipsel-mitx; @:
@@ -59,6 +61,7 @@ vm/tavolga-regular-icewm: vm/regular-icewm use/mipsel-mitx; @:
 vm/tavolga-regular-jeos-systemd: vm/regular-jeos-systemd use/mipsel-mitx; @:
 vm/tavolga-regular-jeos-sysv: vm/regular-jeos-sysv use/mipsel-mitx; @:
 
+vm/bfk3-regular-builder: vm/regular-builder use/mipsel-bfk3; @:
 vm/bfk3-regular-lxde: vm/regular-lxde use/mipsel-bfk3; @:
 vm/bfk3-regular-lxqt: vm/regular-lxqt use/mipsel-bfk3; @:
 vm/bfk3-regular-mate: vm/regular-mate use/mipsel-bfk3; @:
