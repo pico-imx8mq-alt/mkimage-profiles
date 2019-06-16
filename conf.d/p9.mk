@@ -58,4 +58,24 @@ vm/alt-p9-lxqt: vm/regular-lxqt mixin/p9
 vm/alt-p9-mate: vm/regular-mate mixin/p9
 vm/alt-p9-xfce: vm/regular-xfce mixin/p9
 
+ifeq (,$(filter-out mipsel,$(ARCH)))
+
+vm/tavolga-alt-p9-jeos-systemd: vm/tavolga-regular-jeos-systemd mixin/p9
+vm/tavolga-alt-p9-jeos-sysv: vm/tavolga-regular-jeos-sysv mixin/p9
+vm/tavolga-alt-p9-icewm: vm/tavolga-regular-icewm mixin/p9
+vm/tavolga-alt-p9-lxde: vm/tavolga-regular-lxde mixin/p9
+vm/tavolga-alt-p9-lxqt: vm/tavolga-regular-lxqt mixin/p9
+vm/tavolga-alt-p9-mate: vm/tavolga-regular-mate mixin/p9
+vm/tavolga-alt-p9-xfce: vm/tavolga-regular-xfce mixin/p9
+
+vm/bfk3-alt-p9-jeos-systemd: vm/bfk3-regular-jeos-systemd mixin/p9
+vm/bfk3-alt-p9-jeos-sysv: vm/bfk3-regular-jeos-sysv mixin/p9
+vm/bfk3-alt-p9-icewm: vm/bfk3-regular-icewm mixin/p9
+vm/bfk3-alt-p9-lxde: vm/bfk3-regular-lxde mixin/p9
+vm/bfk3-alt-p9-lxqt: vm/bfk3-regular-lxqt mixin/p9
+vm/bfk3-alt-p9-mate: vm/bfk3-regular-mate mixin/p9
+vm/bfk3-alt-p9-xfce: vm/bfk3-regular-xfce mixin/p9
+
+endif
+
 endif
