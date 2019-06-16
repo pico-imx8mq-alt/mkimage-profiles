@@ -23,6 +23,7 @@ ifneq (,$(filter-out i586 x86_64,$(ARCH)))
 endif
 ifeq (,$(filter-out mipsel,$(ARCH)))
 	@$(call set,KFLAVOURS,un-malta)
+	@$(call set,VM_FSTYPE,ext2)
 endif
 	@:
 
