@@ -4,7 +4,7 @@ ifeq (,$(filter-out i586 x86_64,$(ARCH)))
 BASE_TARGET := use/bootloader/grub use/kernel use/firmware
 DESKTOP_TARGET :=
 else
-BASE_TARGET :=
+BASE_TARGET := use/no-multipathd
 DESKTOP_TARGET := use/x11-reduced-resources
 endif
 
