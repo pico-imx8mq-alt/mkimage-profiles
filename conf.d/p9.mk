@@ -50,6 +50,7 @@ vm/alt-p9-cloud: vm/cloud-systemd mixin/p9; @:
 vm/alt-p9-opennebula: vm/opennebula-systemd mixin/p9; @:
 
 # universal builds rootfs and image for all platforms
+vm/alt-p9-builder: vm/regular-builder mixin/p9
 vm/alt-p9-jeos-systemd: vm/regular-jeos-systemd mixin/p9
 vm/alt-p9-jeos-sysv: vm/regular-jeos-sysv mixin/p9
 vm/alt-p9-icewm: vm/regular-icewm mixin/p9
@@ -60,6 +61,7 @@ vm/alt-p9-xfce: vm/regular-xfce mixin/p9
 
 ifeq (,$(filter-out mipsel,$(ARCH)))
 
+vm/tavolga-alt-p9-builder: vm/tavolga-regular-builder mixin/p9
 vm/tavolga-alt-p9-jeos-systemd: vm/tavolga-regular-jeos-systemd mixin/p9
 vm/tavolga-alt-p9-jeos-sysv: vm/tavolga-regular-jeos-sysv mixin/p9
 vm/tavolga-alt-p9-icewm: vm/tavolga-regular-icewm mixin/p9
@@ -68,6 +70,7 @@ vm/tavolga-alt-p9-lxqt: vm/tavolga-regular-lxqt mixin/p9
 vm/tavolga-alt-p9-mate: vm/tavolga-regular-mate mixin/p9
 vm/tavolga-alt-p9-xfce: vm/tavolga-regular-xfce mixin/p9
 
+vm/bfk3-alt-p9-builder: vm/bfk3-regular-builder mixin/p9
 vm/bfk3-alt-p9-jeos-systemd: vm/bfk3-regular-jeos-systemd mixin/p9
 vm/bfk3-alt-p9-jeos-sysv: vm/bfk3-regular-jeos-sysv mixin/p9
 vm/bfk3-alt-p9-icewm: vm/bfk3-regular-icewm mixin/p9
