@@ -1,0 +1,3 @@
+This feature is need specifically for riscv64 architecture.
+It creates a new entry in /etc/fstab file with description of the rootfs (i.e. /)
+with fs_freq equals zero. Alas, if fs_freq is not zero the fsck will fail with rootfs mounted as read-only.

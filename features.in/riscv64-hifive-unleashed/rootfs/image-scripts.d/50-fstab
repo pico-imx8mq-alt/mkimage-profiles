@@ -1,0 +1,8 @@
+#!/bin/sh
+# setup fstab for riscv64 hifive unleashed
+
+CFG=/etc/fstab
+
+[ -s "$CFG" ] || exit 0
+
+echo -e "LABEL=ROOT\t/\t${VM_FSTYPE:-ext4}\tdefaults\t0\t1" >> $CFG
