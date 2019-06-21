@@ -18,6 +18,14 @@ BASE_TARGET += use/tty/S0
 DESKTOP_TARGET += use/x11/radeon
 endif
 
+ifeq (,$(filter-out riscv64,$(ARCH)))
+ifeq (,$(filter-out qcow2 qcow2c,$(IMAGE_TYPE)))
+BASE_TARGET += use/tty/S0
+else
+BASE_TARGET += use/riscv64-hifive-unleashed
+endif
+endif
+
 vm/.regular-base: $(BASE_TARGET)
 ifneq (,$(filter-out i586 x86_64,$(ARCH)))
 	@$(call add,DEFAULT_SERVICES_DISABLE,multipathd)
