@@ -1,6 +1,6 @@
 Name: mkimage-profiles
 Version: 1.3.10
-Release: alt1
+Release: alt0.1
 
 Summary: ALT based distribution metaprofile
 License: GPLv2+
@@ -128,6 +128,9 @@ mv %buildroot%mpdir/doc/mkimage-profiles.7 %buildroot%_man7dir/
 %endif
 
 %changelog
+* Tue Jun 25 2019 Anton Midyukov <antohami@altlinux.org> 1.3.10-alt0.1
+- Release for Starterkits 20190626
+
 * Mon Jun 17 2019 Michael Shigorin <mike@altlinux.org> 1.3.10-alt1
 - add server-v profile, drop groups/openstack (shaba@)
 
