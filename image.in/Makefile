@@ -41,8 +41,8 @@ IMAGE_VERSION := -$(DISTRO_VERSION)
 IMAGE_VER_LINK := $(IMAGE_NAME)$(IMAGE_VERSION)-latest-$(ARCH).$(IMAGE_TYPE)
 endif
 
-IMAGE_OUTFILE  := \
-	$(IMAGE_NAME)$(IMAGE_VERSION)-$(STATUS)$(DATE)-$(ARCH).$(IMAGE_TYPE)
+IMAGE_OUTNAME  := $(IMAGE_NAME)$(IMAGE_VERSION)-$(STATUS)$(DATE)-$(ARCH)
+IMAGE_OUTFILE  := $(IMAGE_OUTNAME).$(IMAGE_TYPE)
 IMAGE_OUTDIR   := $(IMAGEDIR)$(IMAGE_SORTDIR:%=/%)
 IMAGE_OUTPATH  := $(IMAGE_OUTDIR)/$(IMAGE_OUTFILE)
 IMAGE_RELPATH  := $(IMAGE_SORTDIR:%=%/)$(IMAGE_OUTFILE)
@@ -101,6 +101,9 @@ postprocess: | $(addprefix postprocess-,$(sort $(POSTPROCESS_TARGETS)))
 	ln -sf "$(IMAGE_RELPATH)" "$(IMAGE_LINKPATH)" && \
 	ln -sf "$(IMAGE_RELDIR)" "$(OUT_LINK)" && \
 	ln -sf "$(IMAGE_LINK)" "$(IMAGEDIR)/$(CURRENT_LINK).$(IMAGE_TYPE)"; \
+	if [ -n "$(SAVE_TARBALL)" ]; then \
+		echo "** tarball saved: $(IMAGE_OUTPATH)/$(IMAGE_OUTNAME).$(TARSAVE)" >&2; \
+	fi; \
 	if [ -n "$(IMAGE_VER_LINK)" ]; then \
 		ln -sf "$(IMAGE_RELPATH)" "$(IMAGEDIR)/$(IMAGE_VER_LINK)"; \
 	fi; \

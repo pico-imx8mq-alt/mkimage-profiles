@@ -10,8 +10,15 @@ IMAGE_PACKAGES = $(DOT_BASE) \
 IMAGE_PACKAGES_REGEXP = $(THE_PACKAGES_REGEXP) \
                         $(BASE_PACKAGES_REGEXP)
 
+ifdef TARSAVE
+ifeq (,$(filter-out tar tar.gz tar.xz,$(TARSAVE)))
+SAVE_TARBALL := convert-image/$(TARSAVE)
+endif
+endif
+
 # intermediate chroot archive
 VM_TARBALL := $(IMAGE_OUTDIR)/$(IMAGE_NAME).tar
+VM_OUT_TARBALL := $(IMAGE_OUTDIR)/$(IMAGE_OUTNAME).tar
 VM_RAWDISK := $(IMAGE_OUTDIR)/$(IMAGE_NAME).raw
 VM_FSTYPE ?= ext4
 VM_SIZE ?= 0
@@ -30,7 +37,7 @@ check-qemu:
 		exit 1; \
 	fi
 
-tar2fs: check-sudo prepare-tarball-qemu
+tar2fs: $(SAVE_TARBALL) check-sudo prepare-tarball-qemu
 	@if [ -x /usr/share/mkimage-profiles/bin/tar2fs ]; then \
 		TOPDIR=/usr/share/mkimage-profiles; \
 	fi; \
@@ -46,13 +53,17 @@ prepare-tarball-qemu:
 		tar -rf "$(VM_TARBALL)" ./.host/qemu*) ||:
 
 convert-image/tar:
-	mv "$(VM_TARBALL)" "$(IMAGE_OUTPATH)"
+ifdef SAVE_TARBALL
+	cp "$(VM_TARBALL)" "$(VM_OUT_TARBALL)"
+else
+	mv "$(VM_TARBALL)" "$(VM_OUT_TARBALL)"
+endif
 
-convert-image/tar.gz:
-	$(VM_GZIP_COMMAND) < "$(VM_TARBALL)" > "$(IMAGE_OUTPATH)"
+convert-image/tar.gz: convert-image/tar
+	$(VM_GZIP_COMMAND) "$(VM_OUT_TARBALL)"
 
-convert-image/tar.xz:
-	$(VM_XZ_COMMAND) < "$(VM_TARBALL)" > "$(IMAGE_OUTPATH)"
+convert-image/tar.xz: convert-image/tar
+	$(VM_XZ_COMMAND) "$(VM_OUT_TARBALL)"
 
 convert-image/img: tar2fs
 	mv "$(VM_RAWDISK)" "$(IMAGE_OUTPATH)"
