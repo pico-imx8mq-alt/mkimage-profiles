@@ -26,7 +26,7 @@ SIZE_FACTOR=2		# multiply the sizes found by this value
 BOOT_SIZE_FACTOR=2	# multiply /boot size by this value additionally
 BOOTLOADERPARTSIZEM=0	# PReP partition size (ppc*)
 
-CUR_BOUNDARY=0		# align first partition at 1MB for performance (+1)
+CUR_BOUNDARY=7		# align first partition at 1MB for performance (+1)
 
 BOOTFSTYPE=
 BOOTPART=
