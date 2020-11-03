@@ -124,6 +124,9 @@ vm/regular-xfce-tegra: vm/.regular-gtk mixin/regular-xfce use/aarch64-tegra; @:
 vm/regular-xfce-dbm: vm/.regular-gtk mixin/regular-xfce use/aarch64-dbm; @:
 
 vm/regular-gnome3-dbm: vm/.regular-gtk mixin/regular-gnome3 use/aarch64-dbm; @:
+
+# PICO-IMX8MQ
+vm/picoimx8mq-regular-server: vm/regular-jeos-systemd use/aarch64-picoimx8mq/server; @:
 endif
 
 ifeq (,$(filter-out armh,$(ARCH)))

@@ -1,0 +1,25 @@
+ifeq (,$(filter-out aarch64,$(ARCH)))
+use/aarch64-picoimx8mq: use/tty/mxc0 use/uboot
+	@$(call add_feature)
+	@$(call set,KFLAVOURS,pico-imx8mq)
+	@$(call set,VM_PARTTABLE,gpt)
+	@$(call add,THE_LISTS,uboot)
+	@$(call add,THE_PACKAGES,pico-imx8mq-bootimage)
+	@$(call add,THE_PACKAGES,uboot-tools)
+	@$(call add,THE_PACKAGES,kernel-modules-qca9377-pico-imx8mq)
+	@$(call add,THE_PACKAGES,firmware-qca9377)
+	@$(call add,POSTPROCESS_TARGETS,picoimx8mq)
+
+use/aarch64-picoimx8mq/server: use/aarch64-picoimx8mq
+	@$(call add,THE_PACKAGES,parted)
+	@$(call add,THE_PACKAGES,udev-rules-ioschedulers)
+	@$(call add,THE_PACKAGES,cpufreq-simple)
+	@$(call add,THE_PACKAGES,ddclient perl-IO-Socket-SSL)
+	@$(call add,THE_PACKAGES,hostapd wpa_supplicant)
+	@$(call add,THE_PACKAGES,bind-utils libnss-mdns iptables nftables)
+	@$(call add,THE_PACKAGES,libgpiod-utils)
+	@$(call add,THE_LISTS,$(call tags,base security))
+	@$(call add,DEFAULT_SERVICES_ENABLE,avahi-daemon.service)
+	@$(call add,DEFAULT_SERVICES_ENABLE,ddclientd)
+	@$(call add,DEFAULT_SERVICES_ENABLE,wpa_supplicant@wlan0)
+endif

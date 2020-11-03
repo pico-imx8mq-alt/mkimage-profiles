@@ -1,0 +1,9 @@
+#!/bin/sh -efu
+
+cfgfile="/etc/sysconfig/cpufreq-simple"
+
+if [ -f "$cfgfile" ]
+then
+	echo "GOVERNOR_AC_ON=ondemand" >> "$cfgfile"
+	echo "GOVERNOR_AC_OFF=ondemand" >> "$cfgfile"
+fi

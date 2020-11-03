@@ -1,0 +1,32 @@
+#!/bin/sh
+
+CFG="/boot/extlinux/extlinux.conf"
+[ -s "$CFG" ] || {
+	echo "50-imx8mq-bootloader: $CFG missing, exiting" >&2
+	exit 0
+}
+
+# set default console to be serial port
+#sed -i 's/console=tty1/console=ttymxc0,115200/' $CFG
+#sed -i 's/console=tty0/console=ttymxc0,115200/' $CFG
+#sed -i 's/console=ttyS0,115200/console=ttymxc0,115200/' $CFG
+
+# replace ftddir with path to dtb file
+#sed -i 's/fdtdir \/boot\/dtb/fdt \/boot\/dtb\/imx8mq-pico-pi\.dtb/' $CFG
+
+# rewrite extlinux.conf
+cat > /boot/extlinux/extlinux.conf << EOF
+menu title ALT Boot Options
+
+default linux
+timeout $GLOBAL_UBOOT_TIMEOUT
+
+label linux
+        kernel /boot/vmlinuz
+        initrd /boot/initrd.img
+        fdt /boot/dtb/imx8mq-pico-pi.dtb
+        append root=LABEL=ROOT rw rootwait console=ttymxc0,115200
+
+EOF
+
+cat $CFG
