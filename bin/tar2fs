@@ -57,6 +57,17 @@ ppc*)
 	BOOTLOADERPARTSIZEM="8"
 	ROOTPART="2"
 	;;
+arm*|aarch64)
+	BLOCKDEV="/dev/sda"
+	if [ "$BOOTLOADER" != uboot ]; then
+		EFIPART="1"
+		EFIPARTSIZEM="256"
+		EFIPARTFSTYPE="fat"
+		ROOTPART="2"
+	else
+		ROOTPART="1"
+	fi
+	;;
 *)
 	if [ "$BOOTLOADER" == grub-efi -o "$BOOTTYPE" == EFI ]; then
 		EFIPART="1"
