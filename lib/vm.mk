@@ -18,7 +18,8 @@ endif
 ifeq (,$(filter-out i586 x86_64 ppc64le,$(ARCH)))
 vm/.base-grub: vm/.bare use/bootloader/grub; @:
 else
-vm/.base-grub: vm/.base-grub-efi; @:
+vm/.base-grub: vm/.bare use/bootloader/grub; @:
+# vm/.base-grub-efi; @:
 endif
 
 ifeq (,$(filter-out x86_64 aarch64 riscv64,$(ARCH)))
